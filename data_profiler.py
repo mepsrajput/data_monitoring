@@ -14,7 +14,38 @@ APPROX_QUANTILE_ERROR = 0.01
 OUTLIER_THRESHOLD = 1.5
 
 def profile_df(df, summary_level):
-    # The same profile_df function from the previous code goes here
+    # Data profiling results will be stored in this list
+    summary_stats = []
+
+    # Get the list of columns in the DataFrame
+    columns = df.columns
+
+    for column in columns:
+        # Determine the variable type of the column
+        variable_type = determine_variable_type(df, column)
+
+        # Calculate summary statistics based on the variable type
+        if variable_type == 'numeric':
+            stats = calculate_numeric_summary(df, column, summary_level)
+        elif variable_type == 'categorical':
+            stats = calculate_categorical_summary(df, column)
+        else:
+            # Column has an unrecognized data type
+            stats = {
+                "Column": column,
+                "Variable Type": None,
+                "Count": df.count(),
+                "Missing": df.select(column).filter(F.isnan(column) | F.col(column).isNull() | (F.col(column) == "")).count(),
+                "Distinct Values": df.agg(F.countDistinct(column)).first()[0]
+            }
+            logging.warning(f"Unrecognized data type for column '{column}': {df.schema[column].dataType}")
+
+        # Append the statistics to the summary_stats list
+        summary_stats.append(stats)
+
+    # Format the summary statistics for printing
+    summary_str = format_summary(summary_stats)
+    print(summary_str)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Profile a Spark DataFrame.")
@@ -22,6 +53,9 @@ if __name__ == "__main__":
     parser.add_argument("--summary_level", type=str, choices=["summary", "detailed"], default="summary", help="Level of detail in the summary.")
     parser.add_argument("--log_level", type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="INFO", help="Logging level (optional).")
     args = parser.parse_args()
+
+    # Logging Configuration
+    logging.basicConfig(level=args.log_level, format='%(levelname)s: %(message)s')
 
     # Input Validation
     if not args.data_path:
