@@ -50,6 +50,7 @@ def calculate_numeric_stats(df, column, summary_level, progress):
     completed_stats = 0
 
     for stat_name in selected_stats:
+        progress[0] += 1 / total_stats
         if stat_name == 'Count':
             stats[stat_name] = count
         elif stat_name == 'Missing':
@@ -63,9 +64,6 @@ def calculate_numeric_stats(df, column, summary_level, progress):
             stats[stat_name] = df.approxQuantile(column, [percentile], 0.01)[0]
         else:
             stats[stat_name] = df.select(column).agg(getattr(F, stat_name.lower())(column)).first()[0]
-
-        completed_stats += 1
-        progress[0] = completed_stats / total_stats
 
     return stats
 
@@ -96,7 +94,17 @@ def calculate_categorical_stats(df, column, progress):
 
     return stats
 
-# Rest of the code...
+def format_stats(stats_list):
+    """
+    Formats the statistics for printing.
+
+    Args:
+        stats_list: A list of dictionaries containing the statistics.
+
+    Returns:
+        A formatted string of the statistics.
+    """
+    return tabulate(stats_list, headers="keys", tablefmt="pipe")
 
 def profile_df(df, summary_level):
     """
@@ -149,4 +157,14 @@ def profile_df(df, summary_level):
     print(formatted_categorical_stats)
 
 if __name__ == "__main__":
-    # Rest of the code...
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", type=str, required=True)
+    args = parser.parse_args()
+
+    # Load the data.
+    df = spark.read.csv(args.data_path, inferSchema=True, header=True)
+
+    # Profile the data.
+    summary_level = "summary"
+    profile_df(df, summary_level)
