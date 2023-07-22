@@ -23,9 +23,6 @@ if __name__ == "__main__":
     parser.add_argument("--log_level", type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="INFO", help="Logging level (optional).")
     args = parser.parse_args()
 
-    # Set the logging level
-    logging.basicConfig(level=args.log_level, format='%(levelname)s: %(message)s')
-
     # Input Validation
     if not args.data_path:
         logging.error("Data path not provided. Please provide the path to the data file using --data_path argument.")
