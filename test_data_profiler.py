@@ -1,4 +1,4 @@
-# test_data_profiler.py
+# test_data_profiling.py
 import unittest
 from data_profiler import profile_df
 from pyspark.sql import SparkSession
@@ -10,7 +10,7 @@ class TestDataProfiling(unittest.TestCase):
     def tearDown(self):
         self.spark.stop()
 
-def test_profile_df_with_empty_dataframe(self):
+    def test_profile_df_with_empty_dataframe(self):
         # Test case with an empty DataFrame
         columns = ["ID", "Category", "Value"]
         df = self.spark.createDataFrame([], columns)
@@ -56,7 +56,6 @@ def test_profile_df_with_empty_dataframe(self):
 
         # Compare the output with the expected output
         self.assertEqual(output.strip(), expected_output)
-
 
 # Add more test cases as needed
 
