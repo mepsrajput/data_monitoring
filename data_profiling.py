@@ -68,6 +68,13 @@ def calculate_numeric_summary(df, column, summary_level, use_approx_quantile=Tru
                     stats[stat_name] = df.approxQuantile(column, [percentile], 0.01)[0]
                 else:
                     stats[stat_name] = df.approxQuantile(column, [percentile], 0)[0]
+            elif stat_name == 'Outliers':
+                q1, q3 = df.approxQuantile(column, [0.25, 0.75], 0)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                outlier_count = df.filter((F.col(column) < lower_bound) | (F.col(column) > upper_bound)).count()
+                stats[stat_name] = outlier_count
             else:
                 stats[stat_name] = df.select(getattr(F, stat_name.lower())(column)).first()[0]
         except Exception as e:
