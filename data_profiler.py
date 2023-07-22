@@ -14,6 +14,13 @@ APPROX_QUANTILE_ERROR = 0.01
 OUTLIER_THRESHOLD = 1.5
 
 def profile_df(df, summary_level):
+    """
+    Profile a Spark DataFrame and print the summary statistics.
+
+    Args:
+        df: The Spark DataFrame to be profiled.
+        summary_level: The level of detail in the summary: 'summary' for selected statistics, 'detailed' for detailed summary.
+    """
     # Data profiling results will be stored in this list
     summary_stats = []
 
