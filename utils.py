@@ -1,7 +1,8 @@
 # utils.py
 import pyspark.sql.functions as F
+from typing import Tuple
 
-def determine_variable_type(df, column):
+def determine_variable_type(df, column) -> str:
     """
     Determines the variable type of a column in a Spark DataFrame.
 
@@ -21,7 +22,7 @@ def determine_variable_type(df, column):
         logging.warning(f"Unrecognized data type for column '{column}': {data_type}")
         return None
 
-def calculate_count_missing(df, column):
+def calculate_count_missing(df, column) -> Tuple[int, int]:
     """
     Calculates the count and missing values for a column.
 
@@ -83,49 +84,4 @@ def calculate_numeric_summary(df, column, summary_level, use_approx_quantile=Tru
                 iqr = q3 - q1
                 lower_bound = q1 - OUTLIER_THRESHOLD * iqr
                 upper_bound = q3 + OUTLIER_THRESHOLD * iqr
-                outlier_count = df.filter((F.col(column) < lower_bound) | (F.col(column) > upper_bound)).count()
-                stats[stat_name] = outlier_count
-            else:
-                stats[stat_name] = df.select(getattr(F, stat_name.lower())(column)).first()[0]
-        except Exception as e:
-            stats[stat_name] = None
-
-    return stats
-
-def calculate_categorical_summary(df, column):
-    """
-    Calculates summary statistics for a categorical column.
-
-    Args:
-        df: The Spark DataFrame.
-        column: The name of the column.
-
-    Returns:
-        A dictionary containing the summary statistics.
-    """
-    count, missing_count = calculate_count_missing(df, column)
-    mode_result = df.groupBy(column).count().orderBy(F.desc("count")).first()
-    mode = mode_result[column] if mode_result else None
-
-    stats = {
-        "Column": column,
-        "Variable Type": 'categorical',
-        "Count": count,
-        "Missing": missing_count,
-        "Distinct Values": df.agg(F.countDistinct(column)).first()[0],
-        "Mode": mode
-    }
-
-    return stats
-
-def format_summary(stats_list):
-    """
-    Formats the summary statistics for printing.
-
-    Args:
-        stats_list: A list of dictionaries containing the summary statistics.
-
-    Returns:
-        A formatted string of the statistics.
-    """
-    return tabulate(stats_list, headers="keys", tablefmt="pipe")
+                outlier_count = df.filter((
